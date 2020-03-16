@@ -1,2 +1,2 @@
-# chat-app-miniproject
-Parallel and Distributed Systems Miniproject
+# Parallel and Distributed Systems Miniproject
+Chat Application Backend
