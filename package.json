@@ -1,0 +1,28 @@
+{
+  "name": "chat-app-backend",
+  "version": "1.0.0",
+  "description": "Parallel Mini Project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaymsr/chat-app-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jaymsr/chat-app-backend/issues"
+  },
+  "homepage": "https://github.com/jaymsr/chat-app-backend#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongodb": "^3.5.5",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
