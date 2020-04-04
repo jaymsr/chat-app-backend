@@ -1,75 +1,11 @@
 var express = require('express');
-<<<<<<< HEAD
-var http = require('http').createServer(app);
-||||||| merged common ancestors
-var http = require('http');
-=======
->>>>>>> 535aba43d0da114be16970d3fa0c472464038162
 var app = express();
-<<<<<<< HEAD
-var io = require('socket.io')(http)
-
-
-http.listen(3000, function () {
-     console.log('Hello Parallel');
-})
-app.get("*", function (req, res) {
-    res.send("Hello World");
-})
-io.on('connection', function(socket){
-    console.log('a user connected');
-  });
-async function main(){
-    try{
-
-        /*const MongoClient = require('mongodb').MongoClient;
-        const uri = "mongodb+srv://admin:parallel2020@cluster0-cegct.mongodb.net/test?retryWrites=true&w=majority";
-        const client = new MongoClient(uri, { 
-            useNewUrlParser: true, 
-            useUnifiedTopology: true
-        });
-        await client.connect();
-        const find = await client.db("Parallel").collection("Users").findOne({ //test query
-            _id : 5000
-        });
-        console.log(find)*/
-
-    }catch(e){
-        console.error(e)
-    }
-||||||| merged common ancestors
-http.createServer(app).listen(3000, function () {
-     console.log('Hello Parallel');
-})
-app.get("*", function (req, res) {
-    res.send("Hello World");
-})
-async function main(){
-    try{
-
-        const MongoClient = require('mongodb').MongoClient;
-        const uri = "mongodb+srv://admin:parallel2020@cluster0-cegct.mongodb.net/test?retryWrites=true&w=majority";
-        const client = new MongoClient(uri, { 
-            useNewUrlParser: true, 
-            useUnifiedTopology: true
-        });
-        await client.connect();
-        const find = await client.db("Parallel").collection("Users").findOne({ //test query
-            _id : 5000
-        });
-        console.log(find)
-
-    }catch(e){
-        console.error(e)
-    }
-=======
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://admin:parallel2020@cluster0-cegct.mongodb.net/test?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 client.connect();
->>>>>>> 535aba43d0da114be16970d3fa0c472464038162
 
 http.listen(3000, function(){
 	console.log('Hello Parallel');
@@ -126,7 +62,9 @@ async function newUser(user) {
   });
 }
 
-async function newGroup(group) {
+async function newGroup(group, user_email) {
+  group.chats = []
+  group.members = [user_email]
   client.db("Parallel").collection("Groups").insertOne(group, function(err, res) {
     if (err) throw err;
     console.log("new group inserted");
