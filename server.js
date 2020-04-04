@@ -13,7 +13,8 @@ http.listen(3000, function(){
 });
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+  //res.sendFile(__dirname + '/index.html');
+  res.send('Project is running on port 3000');
 });
 
 app.get('/:group', function(req, res) {
@@ -24,28 +25,32 @@ io.on('connection', function(socket){
 
   socket.on('new-user', async function(name) {
     var user = {eiei:name};
+    //if user not in db then create {
     await newUser(user);
-    socket.broadcast.emit('new-user', name + ' has joined the server');
+    //}
+    socket.broadcast.emit('new-user', name);
   });
 
   socket.on('new-group', async function(groupName) {
     var group = {name:groupName}
-    await newGroup(group);
-    // ใส่มันjoin group ด้วย
+    var groupId = await newGroup(group);
+    socket.join(groupId);
   });
 
   socket.on('join-group', function(msg) {
     // msg : userId, groupId
     //if user not in group: 
     socket.join(msg.groupId);
-    io.to(msg.groupId).emit('join-group', msg.name + 'has joined the group');
+    io.to(msg.groupId).emit('join-group', msg.name);
   });
 
-  socket.on('send-message', function(msg){
-    //เก็บใส่แชทdb ละก้เอา chatId มา ส่งไปให้ client
-    //Insert chatdb
-    // var chat = {chatidจากdb,msg} ละก็ส่ง send-messageไปให้ทุกclient
-    socket.broadcast.emit('deliver-message', msg);
+  socket.on('send-message', async function(msg){
+    //msg มี text, groupId, username, timestamp
+    //เก็บใส่db group ละก้เอา chatId มา ส่งไปให้ client
+    //Insert chat in to group
+    // var chat = {chatidจากdb,msg} ละก็ส่ง send-messageไปให้ทุกclientในgroup
+    await insert
+    socket.to(msg.groupId).broadcast.emit('deliver-message', msg);
   });
 
   socket.on('read-message', function(obj) {
@@ -62,9 +67,9 @@ async function newUser(user) {
   });
 }
 
-async function newGroup(group, user_email) {
+async function newGroup(group, username) {
   group.chats = []
-  group.members = [user_email]
+  group.members = [username]
   client.db("Parallel").collection("Groups").insertOne(group, function(err, res) {
     if (err) throw err;
     console.log("new group inserted");
