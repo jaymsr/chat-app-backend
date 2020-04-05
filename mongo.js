@@ -1,13 +1,14 @@
-const { ObjectId } = require("mongodb");
+const {
+    ObjectId
+} = require("mongodb");
+
 exports.newUser = async function (user, client) {
     user.currentGroupList = [];
     await client
         .db("Parallel")
         .collection("Users")
-        .insertOne(user, function (err, res) {
-            if (err) throw err;
-            console.log("new user inserted");
-        });
+        .insertOne(user);
+    console.log("new user inserted");
 };
 
 exports.newGroup = async function (group, username, client) {
@@ -18,12 +19,8 @@ exports.newGroup = async function (group, username, client) {
         await client
             .db("Parallel")
             .collection("Groups")
-            .insertOne(group, function (err, res) {
-                if (err) throw err;
-                console.log("new group inserted");
-            });
-        //join the first user
-        await joinGroup(group._id, username, client);
+            .insertOne(group);
+        console.log("new group inserted");
     } catch (e) {
         console.error(e);
     }
@@ -35,14 +32,14 @@ exports.joinGroup = async function (groupId, username, client) {
         await client
             .db("Parallel")
             .collection("Users")
-            .updateOne(
-                { username: username },
-                { $push: { currentGroupList: ObjectId(groupId) } },
-                function (err, res) {
-                    if (err) throw err;
-                    console.log("Insert ", groupId, "to user", username);
+            .updateOne({
+                username: username
+            }, {
+                $push: {
+                    currentGroupList: ObjectId(groupId)
                 }
-            );
+            });
+        console.log("Insert ", groupId, "to user", username);
     } catch (e) {
         console.error(e);
     }
@@ -54,14 +51,14 @@ exports.leaveGroup = async function (groupId, username, client) {
         await client
             .db("Parallel")
             .collection("Users")
-            .updateOne(
-                { username: username },
-                { $pull: { currentGroupList: ObjectId(groupId) } },
-                function (err, res) {
-                    if (err) throw err;
-                    console.log("Pull ", groupId, "from user", username);
+            .updateOne({
+                username: username
+            }, {
+                $pull: {
+                    currentGroupList: ObjectId(groupId)
                 }
-            );
+            });
+        console.log("Pull ", groupId, "from user", username);
     } catch (e) {
         console.error(e);
     }
@@ -77,14 +74,14 @@ exports.insertChat = async function (msg, client) {
         await client
             .db("Parallel")
             .collection("Groups")
-            .updateOne(
-                { _id: ObjectId(msg.groupId) },
-                { $push: { chats: chat } },
-                function (err, res) {
-                    if (err) throw err;
-                    console.log("chat inserted");
+            .updateOne({
+                _id: ObjectId(msg.groupId)
+            }, {
+                $push: {
+                    chats: chat
                 }
-            );
+            });
+        console.log('chat inserted');
     } catch (e) {
         console.error(e);
     }
@@ -94,7 +91,10 @@ exports.getMembership = async function (username, client) {
     const user = await client
         .db("Parallel")
         .collection("Users")
-        .findOne({ username: username });
+        .findOne({
+            username: username
+        });
+    console.log('getMembership');
     return user.currentGroupList;
 };
 
@@ -108,6 +108,7 @@ exports.getAllChats = async function (client) {
     groups.forEach((value) => {
         allChats[value._id] = value.chats;
     });
+    console.log('getAllChats');
     return allChats;
 };
 
@@ -121,6 +122,7 @@ exports.getAllGroups = async function (client) {
     groups.forEach((value) => {
         allGroups[value._id] = value.groupName;
     });
+    console.log('getAllGroups');
     return allGroups;
 };
 
@@ -128,7 +130,9 @@ exports.checkUserExist = async function (username, client) {
     const user = await client
         .db("Parallel")
         .collection("Users")
-        .findOne({ username: username });
+        .findOne({
+            username: username
+        });
     if (!user) return false;
     return true;
 };
