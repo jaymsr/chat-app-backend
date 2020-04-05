@@ -35,62 +35,44 @@ io.on("connection", function (socket) {
         if (!mongo.checkUserExist(username, client)) {
             await newUser(user);
         }
-
-        const allGroups = getAllGroups();
+        const allGroups = await mongo.getAllGroups(client);
         socket.emit("all-group", allGroups);
 
-        const userGroups = await getMembership(username);
-        groups.forEach((groupId) => {
-            socket.join(groupId);
-            socket.emit("join-group", groupId);
-        });
+        const userGroups = await mongo.getMembership(username, client);
+        socket.emit("join-group", userGroups);
 
-        //get unread messages and emit
+        const allChats = await mongo.getAllChats(client);
+        socket.emit("all-chat", allChats);
     });
 
     socket.on("new-group", async function (msg) {
         var { username, groupName } = msg;
         var group = { name: groupName };
-        var groupId = await newGroup(group, username);
-        socket.join(groupId);
-        var msg = {
-            groupId: groupId,
-            groupName: groupName,
-        };
-        io.emit("new-group", msg);
-        socket.emit("join-group", msg);
+        await mongo.newGroup(group, username, client);
+
+        const allGroups = await mongo.getAllGroups(client);
+        io.emit("all-group", allGroups);
+        const userGroups = await getMembership(username, client);
+        socket.emit("join-group", userGroups);
     });
 
     socket.on("join-group", async function (msg) {
         var { groupId, username } = msg;
-        socket.join(groupId);
-        await joinGroup(groupId, username);
-        socket.broadcast.to(groupId).emit("someone-join-group", username);
+        await mongo.joinGroup(groupId, username, client);
+        const userGroups = await mongo.getMembership(username, client);
+        socket.emit("join-group", userGroups);
     });
 
     socket.on("leave-group", async function (msg) {
         var { username, groupId } = msg;
-        await leaveGroup(groupId, username);
-        socket.leave(groupId);
-        socket.emit("leave-group", msg);
-        io.to(groupId).emit("someone-leave-group", username);
+        await mongo.leaveGroup(groupId, username, client);
+        const userGroups = await mongo.getMembership(username, client);
+        socket.emit("join-group", userGroups);
     });
 
     socket.on("send-message", async function (msg) {
-        var { username, groupId, text, timestamp } = msg;
-        //msg มี text, groupId, username, timestamp
-        //เก็บใส่db group ละก้เอา chatId มา ส่งไปให้ client
-        //Insert chat in to group
-        // var chat = {chatidจากdb,msg} ละก็ส่ง deliver-messageไปให้ทุกclientในgroup
-        msg.chatId = await insertChat(groupId, username, text, timestamp);
-        //broadcast or io.emit??
-        socket.to(groupId).broadcast.emit("deliver-message", msg);
-    });
-
-    socket.on("read-message", function (msg) {
-        // obj ประกอบไปด้วย userId กับ chatId, groupId
-        // ยัดใส่ว่า lastreadในgroup คือ chatไหน
-        var { username, chatId, groupId } = msg;
-        //update last read;
+        await mongo.insertChat(msg, client);
+        const allChats = await mongo.getAllChats(client);
+        io.emit("all-chat", allChats);
     });
 });
