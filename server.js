@@ -19,7 +19,7 @@ http.listen(8000, function () {
 
 app.get("/", function (req, res) {
     //res.sendFile(__dirname + '/index.html');
-    res.send("Project is running on port 3000");
+    // res.send("Project is running on port 3000");
 });
 
 app.get("/ChatRoom", async function (req, res) {
@@ -46,8 +46,13 @@ io.on("connection", function (socket) {
     });
 
     socket.on("new-group", async function (msg) {
-        var { username, groupName } = msg;
-        var group = { name: groupName };
+        var {
+            username,
+            groupName
+        } = msg;
+        var group = {
+            name: groupName
+        };
         await mongo.newGroup(group, username, client);
 
         const allGroups = await mongo.getAllGroups(client);
@@ -57,14 +62,20 @@ io.on("connection", function (socket) {
     });
 
     socket.on("join-group", async function (msg) {
-        var { groupId, username } = msg;
+        var {
+            groupId,
+            username
+        } = msg;
         await mongo.joinGroup(groupId, username, client);
         const userGroups = await mongo.getMembership(username, client);
         socket.emit("join-group", userGroups);
     });
 
     socket.on("leave-group", async function (msg) {
-        var { groupId, username } = msg;
+        var {
+            username,
+            groupId
+        } = msg;
         await mongo.leaveGroup(groupId, username, client);
         const userGroups = await mongo.getMembership(username, client);
         socket.emit("join-group", userGroups);
