@@ -17,31 +17,47 @@ app.get('/', function(req, res){
   res.send('Project is running on port 3000');
 });
 
-app.get('/ChatRoom', function(req, res) {
-  //return all chatroom
+app.get('/ChatRoom', async function(req, res) {
+  const allGroups = await getAllGroups();
+  res.send(allGroups);
 });
 
 io.on('connection', function(socket){
 
-  socket.on('new-user', async function(name) {
-    var user = {username:name,};
+  socket.on('new-user', async function(username) {
+    var user = {username:username};
     //if user not in db then create {
     await newUser(user);
     //}
+
+    const allGroups = getAllGroups();
+    socket.emit('all-group', allGroups);
+
+    const userGroups = await getMembership(username);
+    groups.forEach(groupId => {
+      socket.join(groupId);
+      socket.emit('join-group',groupId);
+    });
+
+    //get unread messages and emit
 
   });
 
   socket.on('new-group', async function(groupName) {
     var group = {name:groupName}
     var groupId = await newGroup(group);
-    socket.join(groupName);
+    socket.join(groupId);
+    var msg = {'groupId':groupId,'groupName':groupName};
+    io.emit('new-group',msg);
+    socket.emit('join-group',groupId);
   });
 
   socket.on('join-group', function(msg) {
     // msg : userId, groupId
     //if user not in group: 
+
     socket.join(msg.groupId);
-    io.to(msg.groupId).emit('join-group', msg.name);
+    socket.broadcast.to(msg.groupId).emit('someone-join-group', msg.name);
   });
 
   socket.on('send-message', async function(msg){
@@ -56,6 +72,11 @@ io.on('connection', function(socket){
   socket.on('read-message', function(obj) {
     // obj ประกอบไปด้วย userId กับ chatId, groupId
     // ยัดใส่ว่า lastreadในgroup คือ chatไหน
+    
+  });
+
+  socket.on('leave-group', async function(msg) {
+    await leaveGroup(msg.username,msg.groupId);
   });
 
 });
@@ -77,11 +98,14 @@ async function newGroup(group, username) {
   });
 }
 
-async function getGroup(group, username) {
-  client.db("Parallel").collection("Groups").insertOne(group, function(err, res) {
-    if (err) throw err;
-    console.log("new group inserted");
-  });
+async function getMembership(username) {
+  const groups = await client.db("Parallel").collection("Users").findOne({ username: username });
+  return Object.keys(groups['groups']);
+}
+
+async function getAllGroups() {
+  const groups = await client.db("Parallel").collection("Groups").find({}).toArray();
+  return groups.map(value => value.groupId);
 }
 
 async function insertChat(groupId, username,msg){
