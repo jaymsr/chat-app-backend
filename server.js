@@ -64,7 +64,7 @@ io.on("connection", function (socket) {
     });
 
     socket.on("leave-group", async function (msg) {
-        var { username, groupId } = msg;
+        var { groupId, username } = msg;
         await mongo.leaveGroup(groupId, username, client);
         const userGroups = await mongo.getMembership(username, client);
         socket.emit("join-group", userGroups);
