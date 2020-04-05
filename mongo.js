@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 exports.newUser = async function (user, client) {
     user.currentGroupList = [];
     await client
@@ -11,7 +12,7 @@ exports.newUser = async function (user, client) {
 
 exports.newGroup = async function (group, username, client) {
     try {
-        group._id = ObjectId();
+        group._id = new ObjectId();
         group.chats = [];
         //insert group to db
         await client
@@ -36,7 +37,7 @@ exports.joinGroup = async function (groupId, username, client) {
             .collection("Users")
             .updateOne(
                 { username: username },
-                { $push: { currentGroupList: groupId } },
+                { $push: { currentGroupList: ObjectId(groupId) } },
                 function (err, res) {
                     if (err) throw err;
                     console.log("Insert ", groupId, "to user", username);
@@ -55,7 +56,7 @@ exports.leaveGroup = async function (groupId, username, client) {
             .collection("Users")
             .updateOne(
                 { username: username },
-                { $pull: { currentGroupList: groupId } },
+                { $pull: { currentGroupList: ObjectId(groupId) } },
                 function (err, res) {
                     if (err) throw err;
                     console.log("Pull ", groupId, "from user", username);
@@ -77,11 +78,11 @@ exports.insertChat = async function (msg, client) {
             .db("Parallel")
             .collection("Groups")
             .updateOne(
-                { _id: msg.groupId },
+                { _id: ObjectId(msg.groupId) },
                 { $push: { chats: chat } },
                 function (err, res) {
                     if (err) throw err;
-                    console.log("chat inserted", res);
+                    console.log("chat inserted");
                 }
             );
     } catch (e) {
@@ -103,7 +104,6 @@ exports.getAllChats = async function (client) {
         .collection("Groups")
         .find({})
         .toArray();
-    console.log(groups);
     allChats = {};
     groups.forEach((value) => {
         allChats[value._id] = value.chats;
@@ -117,10 +117,11 @@ exports.getAllGroups = async function (client) {
         .collection("Groups")
         .find({})
         .toArray();
-    return groups.map((value) => ({
-        groupId: value._id,
-        groupName: value.groupName,
-    }));
+    allGroups = {};
+    groups.forEach((value) => {
+        allGroups[value._id] = value.groupName;
+    });
+    return allGroups;
 };
 
 exports.checkUserExist = async function (username, client) {

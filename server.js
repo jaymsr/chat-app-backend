@@ -19,7 +19,7 @@ http.listen(8000, function () {
 
 app.get("/", function (req, res) {
     //res.sendFile(__dirname + '/index.html');
-    res.send("Project is running on port 3000");
+    // res.send("Project is running on port 3000");
 });
 
 app.get("/ChatRoom", async function (req, res) {
