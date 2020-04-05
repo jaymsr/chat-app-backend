@@ -12,9 +12,9 @@ const client = new MongoClient(uri, {
 var mongo = require("./mongo.js");
 client.connect();
 
-http.listen(3000, function () {
+http.listen(8000, function () {
     console.log("Hello Parallel");
-    console.log("listening on *:3000");
+    console.log("listening on *:8000");
 });
 
 app.get("/", function (req, res) {

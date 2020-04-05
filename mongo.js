@@ -103,7 +103,12 @@ exports.getAllChats = async function (client) {
         .collection("Groups")
         .find({})
         .toArray();
-    return groups.map((value) => ({ [value._id]: value.chats }));
+    console.log(groups);
+    allChats = {};
+    groups.forEach((value) => {
+        allChats[value._id] = value.chats;
+    });
+    return allChats;
 };
 
 exports.getAllGroups = async function (client) {
