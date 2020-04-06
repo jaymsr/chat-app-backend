@@ -11,7 +11,7 @@ exports.newUser = async function (user, client) {
     console.log("new user inserted");
 };
 
-exports.newGroup = async function (group, username, client) {
+exports.newGroup = async function (group, client) {
     try {
         group._id = new ObjectId();
         group.chats = [];
@@ -21,6 +21,7 @@ exports.newGroup = async function (group, username, client) {
             .collection("Groups")
             .insertOne(group);
         console.log("new group inserted");
+        return group._id;
     } catch (e) {
         console.error(e);
     }
@@ -94,6 +95,7 @@ exports.getMembership = async function (username, client) {
         .findOne({
             username: username
         });
+    console.log(user);
     console.log('getMembership');
     return user.currentGroupList;
 };
@@ -122,6 +124,7 @@ exports.getAllGroups = async function (client) {
     groups.forEach((value) => {
         allGroups[value._id] = value.groupName;
     });
+    console.log(allGroups);
     console.log('getAllGroups');
     return allGroups;
 };
@@ -133,6 +136,7 @@ exports.checkUserExist = async function (username, client) {
         .findOne({
             username: username
         });
+    console.log(!user);
     if (!user) return false;
     return true;
 };

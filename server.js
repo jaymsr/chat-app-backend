@@ -32,8 +32,9 @@ io.on("connection", function (socket) {
             username: username,
         };
 
-        if (!mongo.checkUserExist(username, client)) {
-            await newUser(user);
+        if (!(await mongo.checkUserExist(username, client))) {
+            console.log('new user');
+            await mongo.newUser(user, client);
         }
         const allGroups = await mongo.getAllGroups(client);
         socket.emit("all-group", allGroups);
@@ -46,18 +47,20 @@ io.on("connection", function (socket) {
     });
 
     socket.on("new-group", async function (msg) {
+        console.log(msg);
         var {
             username,
-            groupName
+            groupname
         } = msg;
         var group = {
-            name: groupName
+            groupName: groupname
         };
-        await mongo.newGroup(group, username, client);
-
+        console.log(group);
+        const groupId = await mongo.newGroup(group, client);
         const allGroups = await mongo.getAllGroups(client);
         io.emit("all-group", allGroups);
-        const userGroups = await getMembership(username, client);
+        await mongo.joinGroup(groupId, username, client);
+        const userGroups = await mongo.getMembership(username, client);
         socket.emit("join-group", userGroups);
     });
 
@@ -82,6 +85,7 @@ io.on("connection", function (socket) {
     });
 
     socket.on("send-message", async function (msg) {
+        console.log(msg);
         await mongo.insertChat(msg, client);
         const allChats = await mongo.getAllChats(client);
         io.emit("all-chat", allChats);
