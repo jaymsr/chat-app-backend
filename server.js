@@ -53,7 +53,7 @@ io.on("connection", function (socket) {
             groupname
         } = msg;
         var group = {
-            groupName: groupname
+            groupName: groupName
         };
         console.log(group);
         const groupId = await mongo.newGroup(group, client);
