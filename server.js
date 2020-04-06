@@ -50,7 +50,7 @@ io.on("connection", function (socket) {
         console.log(msg);
         var {
             username,
-            groupname
+            groupName
         } = msg;
         var group = {
             groupName: groupName
