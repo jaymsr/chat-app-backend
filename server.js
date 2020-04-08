@@ -12,9 +12,9 @@ const client = new MongoClient(uri, {
 var mongo = require("./mongo.js");
 client.connect();
 
-http.listen(8000, function () {
+http.listen(5000, function () {
     console.log("Hello Parallel");
-    console.log("listening on *:8000");
+    console.log("listening on *:5000");
 });
 
 app.get("/", function (req, res) {
@@ -55,10 +55,10 @@ io.on("connection", function (socket) {
         var group = {
             groupName: groupName
         };
-        console.log(group);
         const groupId = await mongo.newGroup(group, client);
         const allGroups = await mongo.getAllGroups(client);
         io.emit("all-group", allGroups);
+        console.log(allGroups);
         await mongo.joinGroup(groupId, username, client);
         const userGroups = await mongo.getMembership(username, client);
         socket.emit("join-group", userGroups);
